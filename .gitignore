@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data/*.log
+data/public_url.txt
+data/gfs_olr/
+data/olr_cache.npz
+*.tmp

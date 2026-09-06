@@ -1,0 +1,39 @@
+name: SCORPIO daily update + publish
+on:
+  schedule:
+    - cron: "30 7 * * *"   # once a day, after the ECMWF 00 UTC cycle is published
+  workflow_dispatch:        # "Run workflow" button for a manual update
+  push:
+    branches: [main]
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency: { group: scorpio, cancel-in-progress: false }
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: sudo apt-get install -y -qq libeccodes0 && pip install -q -r requirements.txt
+      - name: Update ECMWF data & rebuild dashboard
+        run: python scheduler.py --once || echo "update failed – previous dashboard kept"
+      - name: Commit updated data cache
+        run: |
+          git config user.name scorpio-bot && git config user.email bot@scorpio
+          git add -A SCORPIO_dashboard.html data/ecmwf_olr data/ecmwf_wind data/status.json
+          git commit -m "auto-update $(date -u +%F_%H%M)" || echo "no change"
+          git push
+      - name: Prepare site
+        run: mkdir -p site && cp SCORPIO_dashboard.html site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+  deploy:
+    needs: update
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: ${{ steps.deployment.outputs.page_url }} }
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,11 @@
+streamlit>=1.35
+numpy
+pandas
+plotly
+netCDF4
+cfgrib
+eccodes
+scipy
+xarray
+requests
+matplotlib

@@ -1,0 +1,2 @@
+# SCORPIO – run once a day at 07:30 UTC (after the ECMWF 00 UTC cycle is fully published)
+30 7 * * *  cd /path/to/scorpio_app && /usr/bin/python3 scheduler.py --once >> data/cron.log 2>&1
